@@ -12,10 +12,66 @@ import math
 # Configure the Streamlit page
 st.set_page_config(page_title="DocSift", layout="wide")
 
-# Make main content area wider so all tabs fit without scrolling
+# -------- Fixed header + sticky tabs CSS --------
 st.markdown(
     """
     <style>
+    /* Fixed header bar below the Streamlit toolbar */
+    .docsift-fixed-header {
+        position: fixed;
+        top: 3.2rem;             /* below Streamlit's top toolbar */
+        left: 18rem;             /* shift right so it's not under the sidebar */
+        right: 0;
+        z-index: 1000;
+        padding: 0.6rem 3rem 0.7rem 3rem;
+        background-color: #0E1117;  /* Streamlit dark background */
+        color: #FFFFFF;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    /* Optional: when the sidebar is collapsed on smaller screens,
+       let the header stretch full width again */
+    @media (max-width: 1000px) {
+        .docsift-fixed-header {
+            left: 0;
+        }
+        .docsift-tabs-wrapper {
+            left: 0;
+        }
+    }
+
+    .docsift-fixed-header h1 {
+        margin: 0;
+        font-size: 2.2rem;   /* larger, real title */
+        font-weight: 700;
+        color: #FFFFFF;
+    }
+
+    .docsift-fixed-header p {
+        margin: 0.2rem 0 0 0;
+        font-size: 0.95rem;
+        opacity: 0.85;
+        color: #FFFFFF;
+    }
+
+    /* Fixed wrapper for the tabs, directly under the header */
+    .docsift-tabs-wrapper {
+        position: fixed;
+        top: 7.8rem;          /* header (3.2rem) + header height (~4.6rem) */
+        left: 18rem;          /* same as header left */
+        right: 0;
+        z-index: 999;
+        padding: 0.2rem 3rem 0.35rem 3rem;
+        background-color: #0E1117;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+    }
+
+    /* Push main content down so it isn't hidden behind header + tabs */
+    .block-container {
+        padding-top: 11.0rem;   /* toolbar + header + tabs */
+    }
+
+    /* Optional: widen main content area */
     .main .block-container {
         max-width: 2000px !important;
         padding-left: 3rem;
@@ -25,6 +81,22 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
+
+# Render fixed header once (outside sidebar / main logic)
+st.markdown(
+    """
+    <div class="docsift-fixed-header">
+        <h1>DocSift</h1>
+        <p>Your AI-powered document analysis toolkit.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+
 
 
 # --------- Safety limits (we'll later make these per-plan) ---------
@@ -630,7 +702,8 @@ else:
         # At this point, text is ready and passed safety limits
         st.success("Document loaded successfully.")
 
-        # Create tabbed interface for all analysis tools
+                # Create tabbed interface for all analysis tools (fixed under header)
+        st.markdown('<div class="docsift-tabs-wrapper">', unsafe_allow_html=True)
         tab_overview, tab_summary, tab_keypoints, tab_actions, tab_risks, tab_eli12, tab_rewrite, tab_study, tab_full = st.tabs([
             "Overview",
             "Summary",
@@ -642,6 +715,8 @@ else:
             "Study Guide",
             "Full Report"
         ])
+        st.markdown('</div>', unsafe_allow_html=True)
+
 
         # ---- Overview tab: show raw extracted text ----
         with tab_overview:
