@@ -4,3 +4,4 @@ python-dotenv
 pdfplumber
 python-docx
 fpdf2
+stripe
