@@ -683,13 +683,17 @@ with st.sidebar:
         st.markdown("### ⭐ DocSift Pro Active")
         st.caption("Thank you for supporting DocSift!")
     else:
-        st.markdown("### Free Account")
-        st.caption(
-            "You're currently using the free version.\n\n"
-            "Upgrade to DocSift Pro to unlock advanced analysis tools like "
-            "Key Points, Action Items, Risk Analysis, Explain Like I'm 12, "
-            "Clarity Rewrites, Study Guides, and Full Reports."
-        )
+        st.markdown(
+        f"""
+        <span>
+        <a href="{UPGRADE_URL}" target="_blank"><strong>Upgrade</strong></a>
+        to DocSift Pro to unlock advanced analysis tools like 
+        <em>Key Points, Action Items, Risk Analysis, Explain Like I'm 12, 
+        Clarity Rewrites, Study Guides, and Full Reports.</em>
+        </span>
+        """,
+        unsafe_allow_html=True,
+    )
 
         # Simple Pro unlock via access code
         pro_code_input = st.text_input(
@@ -706,7 +710,7 @@ with st.sidebar:
             else:
                 st.error("Invalid access code. Please double-check the code or contact support.")
 
-        st.markdown(f"[👉 Learn about DocSift Pro]({UPGRADE_URL})")
+        st.markdown(f"[👉 Get DocSift Pro]({UPGRADE_URL})")
 
     # --- Dev-only override (does NOT reset is_pro_user in production) ---
 
