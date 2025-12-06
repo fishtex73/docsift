@@ -659,12 +659,7 @@ def generate_docx_from_markdown(markdown_text: str) -> bytes:
 with st.sidebar:
     
     
-    if st.session_state.is_pro_user:
-    st.markdown("### ⭐ DocSift Pro Active")
-else:
-    st.markdown("### Free Account")
-
-    
+     
     st.header("Upload a Document")
 
     uploaded_file = st.file_uploader(
@@ -681,6 +676,13 @@ else:
 
     st.markdown("---")
     st.subheader("Account")
+
+    if st.session_state.is_pro_user:
+        st.markdown("### ⭐ DocSift Pro Active")
+    else:
+        st.markdown("### Free Account")
+
+
 
     # Dev-only Pro toggle. Set DOCSIFT_DEV_MODE=true in your env/Secrets to see this.
     if DEV_MODE:
