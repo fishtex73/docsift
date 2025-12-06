@@ -677,29 +677,49 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("Account")
 
+# --- Main account status + Pro unlock ---
+
     if st.session_state.is_pro_user:
         st.markdown("### ⭐ DocSift Pro Active")
+        st.caption("Thank you for supporting DocSift!")
     else:
         st.markdown("### Free Account")
+        st.caption(
+            "You're currently using the free version.\n\n"
+            "Upgrade to DocSift Pro to unlock advanced analysis tools like "
+            "Key Points, Action Items, Risk Analysis, Explain Like I'm 12, "
+            "Clarity Rewrites, Study Guides, and Full Reports."
+        )
 
+        # Simple Pro unlock via access code
+        pro_code_input = st.text_input(
+            "Enter your DocSift Pro access code",
+            type="password",
+            help="If you've purchased Pro, enter the code you received after checkout.",
+        )
 
+        if st.button("Activate Pro"):
+            expected_code = st.secrets.get("PRO_ACCESS_CODE", "")
+            if pro_code_input.strip() and pro_code_input.strip() == expected_code:
+                st.session_state.is_pro_user = True
+                st.success("DocSift Pro has been activated for this browser session. 🎉")
+            else:
+                st.error("Invalid access code. Please double-check the code or contact support.")
 
-    # Dev-only Pro toggle. Set DOCSIFT_DEV_MODE=true in your env/Secrets to see this.
+        st.markdown(f"[👉 Learn about DocSift Pro]({UPGRADE_URL})")
+
+    # --- Dev-only override (does NOT reset is_pro_user in production) ---
+
     if DEV_MODE:
+        st.markmarkdown("---")
         st.caption("Developer controls (visible only in DEV_MODE).")
-        pro_toggle = st.checkbox(
+        dev_force_pro = st.checkbox(
             "Force Pro mode (dev only)",
             value=st.session_state.get("is_pro_user", False),
         )
-        st.session_state.is_pro_user = pro_toggle
-    else:
-        # In production, default to Free unless you later plug in real auth/billing
-        st.session_state.is_pro_user = False
-        st.caption(
-            "You're currently using the free version.\n\n"
-            "Upgrade to DocSift Pro to unlock all advanced analysis tools."
-        )
-        st.markdown(f"[👉 Learn about DocSift Pro]({UPGRADE_URL})")
+        if dev_force_pro:
+            st.session_state.is_pro_user = True
+
 
 
 
