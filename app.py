@@ -14,7 +14,7 @@ st.set_page_config(page_title="DocSift", layout="wide")
 
 
 # Simple upgrade URL placeholder – change this later to your real Stripe checkout or pricing page
-UPGRADE_URL = "https://getdocsift.com/pricing"
+UPGRADE_URL = "https://buy.stripe.com/14A7sLej62Qw7Xs2vsbZe00"
 
 # Dev flag so you (and only you) can enable a Pro toggle in dev
 DEV_MODE = os.getenv("DOCSIFT_DEV_MODE", "false").lower() == "true"
