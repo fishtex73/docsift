@@ -7,6 +7,8 @@ from openai import OpenAI
 import io
 from fpdf import FPDF
 import math
+import stripe
+from urllib.parse import urlparse, parse_qs
 
 
 # Configure the Streamlit page
@@ -18,6 +20,27 @@ UPGRADE_URL = "https://buy.stripe.com/14A7sLej62Qw7Xs2vsbZe00"
 
 # Dev flag so you (and only you) can enable a Pro toggle in dev
 DEV_MODE = os.getenv("DOCSIFT_DEV_MODE", "false").lower() == "true"
+
+
+# Stripe API key from secrets
+stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
+
+# Check for Stripe checkout session ID in URL
+query_params = st.query_params
+
+if "session_id" in query_params:
+    session_id = query_params["session_id"]
+
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+
+        if session and session.get("payment_status") == "paid":
+            st.session_state.is_pro_user = True
+            st.success("🎉 Your DocSift Pro subscription is active!")
+
+    except Exception as e:
+        st.error(f"Stripe verification error: {e}")
+
 
 
 # -------- Usage Tracking --------
@@ -634,6 +657,14 @@ def generate_docx_from_markdown(markdown_text: str) -> bytes:
 # ---- Streamlit app layout ----
 # ------------- Sidebar: upload & info -------------
 with st.sidebar:
+    
+    
+    if st.session_state.is_pro_user:
+    st.markdown("### ⭐ DocSift Pro Active")
+else:
+    st.markdown("### Free Account")
+
+    
     st.header("Upload a Document")
 
     uploaded_file = st.file_uploader(
