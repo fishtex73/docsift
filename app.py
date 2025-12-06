@@ -13,6 +13,13 @@ import math
 st.set_page_config(page_title="DocSift", layout="wide")
 
 
+# Simple upgrade URL placeholder – change this later to your real Stripe checkout or pricing page
+UPGRADE_URL = "https://getdocsift.com/pricing"
+
+# Dev flag so you (and only you) can enable a Pro toggle in dev
+DEV_MODE = os.getenv("DOCSIFT_DEV_MODE", "false").lower() == "true"
+
+
 # -------- Usage Tracking --------
 if "daily_uses" not in st.session_state:
     st.session_state.daily_uses = 0
@@ -134,6 +141,16 @@ def check_limits(page_count):
 
     return None
 
+
+def render_pro_upsell(feature_name: str):
+    """Standard Pro upsell block shown when a feature is locked."""
+    st.info(
+        f"🔒 **{feature_name} is a DocSift Pro feature.**\n\n"
+        "Upgrade to DocSift Pro to unlock this and all advanced analysis tools "
+        "(Key Points, Action Items, Risk Analyzer, Explain Like I'm 12, "
+        "Clarity Rewrite, Study Guides, and Full Reports)."
+    )
+    st.markdown(f"[👉 Upgrade to DocSift Pro]({UPGRADE_URL})")
 
 
 def estimate_pages_from_text(text: str) -> int:
@@ -632,14 +649,25 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.subheader("Account (temporary)")
+    st.subheader("Account")
 
-    # STEP 7: TEMP PRO TOGGLE
-    pro_toggle = st.checkbox(
-        "I'm a Pro user (temporary manual switch)",
-        value=st.session_state.get("is_pro_user", False),
-    )
-    st.session_state.is_pro_user = pro_toggle
+    # Dev-only Pro toggle. Set DOCSIFT_DEV_MODE=true in your env/Secrets to see this.
+    if DEV_MODE:
+        st.caption("Developer controls (visible only in DEV_MODE).")
+        pro_toggle = st.checkbox(
+            "Force Pro mode (dev only)",
+            value=st.session_state.get("is_pro_user", False),
+        )
+        st.session_state.is_pro_user = pro_toggle
+    else:
+        # In production, default to Free unless you later plug in real auth/billing
+        st.session_state.is_pro_user = False
+        st.caption(
+            "You're currently using the free version.\n\n"
+            "Upgrade to DocSift Pro to unlock all advanced analysis tools."
+        )
+        st.markdown(f"[👉 Learn about DocSift Pro]({UPGRADE_URL})")
+
 
 
 # ------------- Main content -------------
@@ -741,11 +769,7 @@ else:
             st.subheader("Key Points")
             # STEP 9: Upgrade prompt
             if not st.session_state.is_pro_user:
-                st.info(
-                    "🔒 **This feature is available in DocSift Pro.**\n\n"
-                    "Unlock Key Points, Action Items, Risks, Explain Like I'm 12, "
-                    "Clarity Rewrite, Study Guides, and Full Reports."
-                    )
+                render_pro_upsell("Key Points")
 
 
             else:
@@ -767,10 +791,7 @@ else:
             st.subheader("Action Items")
 
             if not st.session_state.is_pro_user:
-                st.info(
-                    "🔒 **Action Items is a Pro feature.**\n\n"
-                    "Upgrade to DocSift Pro to unlock all analysis tools."
-                    )
+                render_pro_upsell("Action Items")
 
             else:
                 st.write(
@@ -791,10 +812,7 @@ else:
             st.subheader("Risks / Red Flags")
 
             if not st.session_state.is_pro_user:
-                st.info(
-                    "🔒 **Risk Analyzer is available in DocSift Pro.**\n\n"
-                    "Upgrade to detect red flags, missing data, or potential issues."
-                    )
+                render_pro_upsell("Risk Analyzer")
 
             
             else:
@@ -816,10 +834,7 @@ else:
             st.subheader("Explain Like I'm 12")
 
             if not st.session_state.is_pro_user:
-                st.info(
-                    "🔒 **This simplified explanation feature is part of DocSift Pro.**\n\n"
-                    "Upgrade to unlock easy-to-understand rewriting."
-                    )
+                render_pro_upsell("Explain Like I'm 12")
 
             
             else:
@@ -841,10 +856,7 @@ else:
             st.subheader("Rewrite for Clarity & Professional Tone")
 
             if not st.session_state.is_pro_user:
-                st.info(
-                    "🔒 **Clarity Rewrite is available with DocSift Pro.**\n\n"
-                    "Upgrade for clean, professional-quality rewrites."
-                    )
+                render_pro_upsell("Rewrite for Clarity")
 
             
             else:
@@ -866,10 +878,7 @@ else:
             st.subheader("Study Guide / Quiz")
 
             if not st.session_state.is_pro_user:
-                st.info(
-                    "🔒 **Study Guides & quizzes are Pro-exclusive features.**\n\n"
-                    "Upgrade to transform documents into training materials."
-                    )
+                render_pro_upsell("Study Guide / Quiz")
 
             
             else:
@@ -891,11 +900,7 @@ else:
             st.subheader("Full Report (All Sections)")
 
             if not st.session_state.is_pro_user:
-                st.info(
-                    "🔒 **Full Report generation is available in DocSift Pro.**\n\n"
-                    "Upgrade to generate full summaries, risks, action items, rewrites, "
-                    "and downloadable PDF/DOCX reports."
-                    )
+                render_pro_upsell("Full Report")
 
             
             else:
