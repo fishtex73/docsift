@@ -657,9 +657,7 @@ def generate_docx_from_markdown(markdown_text: str) -> bytes:
 # ---- Streamlit app layout ----
 # ------------- Sidebar: upload & info -------------
 with st.sidebar:
-    
-    
-     
+
     st.header("Upload a Document")
 
     uploaded_file = st.file_uploader(
@@ -677,42 +675,29 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("Account")
 
-# --- Main account status + Pro unlock ---
-
+    # ---- Pro User ----
     if st.session_state.is_pro_user:
         st.markdown("### ⭐ DocSift Pro Active")
         st.caption("Thank you for supporting DocSift!")
+    
+    # ---- Free User ----
     else:
-                      
         st.markdown(
-        f"""
-        <span>
-        <a href="https://getdocsift.com/#account" target="_blank"><strong>Upgrade</strong></a>
-        to DocSift Pro to unlock advanced analysis tools like 
-        <em>Key Points, Action Items, Risk Analysis, Explain Like I'm 12, 
-        Clarity Rewrites, Study Guides, and Full Reports.</em>
-        </span>
-        """,
-        unsafe_allow_html=True,
-    )
-
-        # Simple Pro unlock via access code
-        pro_code_input = st.text_input(
-            "Enter your DocSift Pro access code",
-            type="password",
-            help="If you've purchased Pro, enter the code you received after checkout.",
+            """
+            <div style="line-height:1.5;">
+                <a href="https://getdocsift.com/#account" target="_blank"
+                   style="font-weight:600; text-decoration:none;">
+                   Upgrade to DocSift Pro
+                </a>
+                <br>
+                Unlock advanced features including:<br>
+                <em>Key Points, Action Items, Risk Analysis, Explain Like I'm 12,<br>
+                Clarity Rewrites, Study Guides, and Full Reports.</em>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
-
-        if st.button("Activate Pro"):
-            expected_code = st.secrets.get("PRO_ACCESS_CODE", "")
-            if pro_code_input.strip() and pro_code_input.strip() == expected_code:
-                st.session_state.is_pro_user = True
-                st.success("DocSift Pro has been activated for this browser session. 🎉")
-            else:
-                st.error("Invalid access code. Please double-check the code or contact support.")
-
-        st.markdown(f"[👉 Get DocSift Pro]({UPGRADE_URL})")
-
+        
     # --- Dev-only override (does NOT reset is_pro_user in production) ---
 
     if DEV_MODE:
