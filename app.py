@@ -683,10 +683,11 @@ with st.sidebar:
         st.markdown("### ⭐ DocSift Pro Active")
         st.caption("Thank you for supporting DocSift!")
     else:
+                      
         st.markdown(
         f"""
         <span>
-        <a href="{UPGRADE_URL}" target="_blank"><strong>Upgrade</strong></a>
+        <a href="https://getdocsift.com/#account" target="_blank"><strong>Upgrade</strong></a>
         to DocSift Pro to unlock advanced analysis tools like 
         <em>Key Points, Action Items, Risk Analysis, Explain Like I'm 12, 
         Clarity Rewrites, Study Guides, and Full Reports.</em>
