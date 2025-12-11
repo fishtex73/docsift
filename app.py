@@ -10,6 +10,10 @@ import math
 import stripe
 from urllib.parse import urlparse, parse_qs
 
+import json
+import firebase_admin
+from firebase_admin import credentials, auth as fb_auth, firestore
+
 
 # Configure the Streamlit page
 st.set_page_config(page_title="DocSift", layout="wide")
@@ -25,21 +29,82 @@ DEV_MODE = os.getenv("DOCSIFT_DEV_MODE", "false").lower() == "true"
 # Stripe API key from secrets
 stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 
-# Check for Stripe checkout session ID in URL
-query_params = st.query_params
+# ---------- Firebase Admin initialization (for plan verification) ----------
 
-if "session_id" in query_params:
-    session_id = query_params["session_id"]
+@st.cache_resource
+def init_firebase():
+    """
+    Initialize Firebase Admin SDK once and reuse.
+    """
+    if not firebase_admin._apps:
+        # Load service account JSON from Streamlit secrets
+        service_account_info = json.loads(st.secrets["firebase"]["service_account_json"])
+        cred = credentials.Certificate(service_account_info)
+        firebase_admin.initialize_app(cred)
+    return firestore.client()
+
+db = init_firebase()
+
+
+def sync_plan_from_firebase():
+    """
+    If a Firebase ID token is present in the URL (?token=...),
+    verify it, look up the user doc in Firestore, and set
+    st.session_state.is_pro_user accordingly.
+
+    We key Firestore docs by lowercased email, matching the landing page.
+    """
+    # Handle Streamlit query params for both new and older APIs
+    try:
+        params = st.query_params  # Streamlit 1.40+
+    except AttributeError:
+        params = st.experimental_get_query_params()
+
+    raw_token = params.get("token", None)
+    if raw_token is None:
+        # No token → nothing to do; allow anonymous usage
+        return
+
+    # raw_token may be a list or a string depending on API
+    if isinstance(raw_token, list):
+        id_token = raw_token[0]
+    else:
+        id_token = raw_token
+
+    if not id_token:
+        return
 
     try:
-        session = stripe.checkout.Session.retrieve(session_id)
+        decoded = fb_auth.verify_id_token(id_token)
+    except Exception:
+        # If token is invalid/expired, treat as anonymous user
+        return
 
-        if session and session.get("payment_status") == "paid":
-            st.session_state.is_pro_user = True
-            st.success("🎉 Your DocSift Pro subscription is active!")
+    email = (decoded.get("email") or "").lower().strip()
+    if not email:
+        return
 
-    except Exception as e:
-        st.error(f"Stripe verification error: {e}")
+    # Store email in session for display
+    st.session_state["firebase_email"] = email
+
+    # Look up Firestore user doc: users/{emailKey}
+    doc_ref = db.collection("users").document(email)
+    snap = doc_ref.get()
+
+    plan = "free"
+    if snap.exists:
+        data = snap.to_dict()
+        plan = (data.get("plan") or "free").lower()
+
+    st.session_state["firebase_plan"] = plan
+
+    # Synchronize Pro/Free into the app's flag
+    st.session_state.is_pro_user = (plan == "pro")
+
+
+# Run once at import time so the plan is ready before UI renders
+sync_plan_from_firebase()
+
 
 
 
@@ -674,6 +739,17 @@ with st.sidebar:
 
     st.markdown("---")
     st.subheader("Account")
+
+    # NEW: show Firebase-linked account info if available
+    firebase_email = st.session_state.get("firebase_email")
+    firebase_plan = st.session_state.get("firebase_plan")
+
+    if firebase_email:
+        st.caption(f"Signed in as: {firebase_email}")
+
+    if firebase_plan:
+        st.caption(f"Account plan: {firebase_plan.capitalize()}")
+
 
     # ---- Pro User ----
     if st.session_state.is_pro_user:
