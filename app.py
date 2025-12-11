@@ -37,11 +37,12 @@ def init_firebase():
     Initialize Firebase Admin SDK once and reuse.
     """
     if not firebase_admin._apps:
-        # Load service account JSON from Streamlit secrets
-        service_account_info = json.loads(st.secrets["firebase"]["service_account_json"])
+        # st.secrets["firebase"] is already a dict of the service account fields
+        service_account_info = dict(st.secrets["firebase"])
         cred = credentials.Certificate(service_account_info)
         firebase_admin.initialize_app(cred)
     return firestore.client()
+
 
 db = init_firebase()
 
