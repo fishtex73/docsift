@@ -37,11 +37,32 @@ def init_firebase():
     Initialize Firebase Admin SDK once and reuse.
     """
     if not firebase_admin._apps:
-        # st.secrets["firebase"] is already a dict of the service account fields
-        service_account_info = dict(st.secrets["firebase"])
+        fsec = st.secrets["firebase"]
+
+        # Build the exact structure Firebase Admin expects
+        service_account_info = {
+            "type": "service_account",
+            "project_id": fsec["project_id"],
+            "private_key_id": fsec["private_key_id"],
+            # Ensure proper newlines in the private key
+            "private_key": fsec["private_key"].replace("\\n", "\n"),
+            "client_email": fsec["client_email"],
+            "client_id": fsec["client_id"],
+            "auth_uri": fsec["auth_uri"],
+            "token_uri": fsec["token_uri"],
+            "auth_provider_x509_cert_url": fsec["auth_provider_x509_cert_url"],
+            "client_x509_cert_url": fsec["client_x509_cert_url"],
+        }
+
+        # Optional field in newer keys
+        if "universe_domain" in fsec:
+            service_account_info["universe_domain"] = fsec["universe_domain"]
+
         cred = credentials.Certificate(service_account_info)
         firebase_admin.initialize_app(cred)
+
     return firestore.client()
+
 
 
 db = init_firebase()
