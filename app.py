@@ -14,6 +14,16 @@ import json
 import firebase_admin
 from firebase_admin import credentials, auth as fb_auth, firestore
 
+# Hide Streamlit footer and hamburger menu
+hide_streamlit_style = """
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+    </style>
+"""
+import streamlit as st
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 
 # Configure the Streamlit page
 st.set_page_config(page_title="DocSift", layout="wide")
