@@ -762,6 +762,18 @@ with st.sidebar:
         type=["pdf", "docx", "txt"]
     )
 
+    st.markdown("""
+    ### How to use DocSift
+
+    1. **Upload a document** (PDF, Word, or text file).  
+    2. **Wait for DocSift to read it** — you’ll see “Document loaded successfully.”  
+    3. Select one of the tools above to **summarize, extract key points, rewrite**, or **analyze** your document.
+
+    DocSift does not store your documents.  
+    Everything is processed securely during your session only.
+    """)
+
+
     st.markdown("**Current limits**")
     st.caption(
         f"- Free: up to **{FREE_MAX_PAGES}** pages per document, "
@@ -856,6 +868,9 @@ else:
     else:
         # At this point, text is ready and passed safety limits
         st.success("Document loaded successfully.")
+
+        st.info("Now choose a tool above to analyze or summarize your document.")
+
 
 
         # ---------- STEP 5: Usage & Free-Tier Limits ----------
