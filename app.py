@@ -848,10 +848,15 @@ else:
         error_message = str(e)
 
     if error_message:
-        st.error(error_message)
+        st.error(
+            "We couldn't read that file. It may be scanned, password-protected, "
+            "or in an unsupported format. Please try a different document."
+        )
+        st.caption(f"Technical details: {error_message}")
     else:
         # At this point, text is ready and passed safety limits
         st.success("Document loaded successfully.")
+
 
         # ---------- STEP 5: Usage & Free-Tier Limits ----------
         # Estimate pages from text (for DOCX/TXT) or from PDF earlier logic
@@ -892,24 +897,41 @@ else:
                 # ---- Summary tab ----
         with tab_summary:
             st.subheader("AI Summary")
-            st.write("Generate a clean, concise summary of your document. This provides a quick high-level understanding without reading the entire text.")
+            st.write(
+                "Generate a clean, concise summary of your document. "
+                "This provides a quick high-level understanding without reading the entire text."
+            )
 
             if st.button("Generate Summary"):
-                with st.spinner("Summarizing document..."):
-                    summary = summarize_document(text)
-                st.write(summary)
+                try:
+                    with st.spinner("Summarizing document..."):
+                        summary = summarize_document(text)
 
-                st.session_state.usage_log.append({"action": "summary"})
+                    if isinstance(summary, str) and summary.startswith("[Error"):
+                        st.error(
+                            "There was a problem generating the summary. "
+                            "Please try again in a moment or try a smaller document."
+                        )
+                        st.caption(summary)
+                    else:
+                        st.write(summary)
+                        st.session_state.usage_log.append({"action": "summary"})
+
+                except Exception as e:
+                    st.error(
+                        "Something went wrong while generating the summary. "
+                        "Please try again or try another file."
+                    )
+                    st.caption(f"Technical details: {e}")
+
 
 
                 # ---- Key Points tab ----
         with tab_keypoints:
             st.subheader("Key Points")
-            # STEP 9: Upgrade prompt
+
             if not st.session_state.is_pro_user:
                 render_pro_upsell("Key Points")
-
-
             else:
                 st.write(
                     "Extract the most important points, ideas, and takeaways from the document. "
@@ -917,11 +939,27 @@ else:
                 )
 
                 if st.button("Generate Key Points"):
-                    with st.spinner("Finding key ideas..."):
-                        key_points = extract_key_points(text)
-                    st.write(key_points)
+                    try:
+                        with st.spinner("Finding key ideas..."):
+                            key_points = extract_key_points(text)
 
-                    st.session_state.usage_log.append({"action": "key_points"})
+                        if isinstance(key_points, str) and key_points.startswith("[Error"):
+                            st.error(
+                                "There was a problem extracting key points. "
+                                "Please try again in a moment."
+                            )
+                            st.caption(key_points)
+                        else:
+                            st.write(key_points)
+                            st.session_state.usage_log.append({"action": "key_points"})
+
+                    except Exception as e:
+                        st.error(
+                            "Something went wrong while extracting key points. "
+                            "Please try again."
+                        )
+                        st.caption(f"Technical details: {e}")
+
 
 
                 # ---- Action Items tab ----
@@ -930,7 +968,6 @@ else:
 
             if not st.session_state.is_pro_user:
                 render_pro_upsell("Action Items")
-
             else:
                 st.write(
                     "Identify actionable steps, tasks, and follow-ups based on the document content. "
@@ -938,11 +975,27 @@ else:
                 )
 
                 if st.button("Generate Action Items"):
-                    with st.spinner("Looking for tasks and follow-ups..."):
-                        action_items = extract_action_items(text)
-                    st.write(action_items)
+                    try:
+                        with st.spinner("Looking for tasks and follow-ups..."):
+                            action_items = extract_action_items(text)
 
-                    st.session_state.usage_log.append({"action": "action_items"})
+                        if isinstance(action_items, str) and action_items.startswith("[Error"):
+                            st.error(
+                                "There was a problem extracting action items. "
+                                "Please try again in a moment."
+                            )
+                            st.caption(action_items)
+                        else:
+                            st.write(action_items)
+                            st.session_state.usage_log.append({"action": "action_items"})
+
+                    except Exception as e:
+                        st.error(
+                            "Something went wrong while extracting action items. "
+                            "Please try again."
+                        )
+                        st.caption(f"Technical details: {e}")
+
 
 
                 # ---- Risks / Red Flags tab ----
@@ -951,8 +1004,6 @@ else:
 
             if not st.session_state.is_pro_user:
                 render_pro_upsell("Risk Analyzer")
-
-            
             else:
                 st.write(
                     "Automatically scan the document for risks, gaps, red flags, or potential issues. "
@@ -960,11 +1011,27 @@ else:
                 )
 
                 if st.button("Analyze Risks"):
-                    with st.spinner("Scanning for risks and red flags..."):
-                        risks = extract_risks(text)
-                    st.write(risks)
+                    try:
+                        with st.spinner("Scanning for risks and red flags..."):
+                            risks = extract_risks(text)
 
-                    st.session_state.usage_log.append({"action": "risks"})
+                        if isinstance(risks, str) and risks.startswith("[Error"):
+                            st.error(
+                                "There was a problem analyzing risks. "
+                                "Please try again in a moment."
+                            )
+                            st.caption(risks)
+                        else:
+                            st.write(risks)
+                            st.session_state.usage_log.append({"action": "risks"})
+
+                    except Exception as e:
+                        st.error(
+                            "Something went wrong while analyzing risks. "
+                            "Please try again."
+                        )
+                        st.caption(f"Technical details: {e}")
+
 
 
                 # ---- Explain Like I'm 12 tab ----
@@ -973,8 +1040,6 @@ else:
 
             if not st.session_state.is_pro_user:
                 render_pro_upsell("Explain Like I'm 12")
-
-            
             else:
                 st.write(
                     "Simplify complex text into clear, easy-to-understand language. "
@@ -982,11 +1047,27 @@ else:
                 )
 
                 if st.button("Simplify the Document"):
-                    with st.spinner("Rewriting in simple language..."):
-                        simple_version = explain_like_12(text)
-                    st.write(simple_version)
+                    try:
+                        with st.spinner("Rewriting in simple language..."):
+                            simple_version = explain_like_12(text)
 
-                    st.session_state.usage_log.append({"action": "eli12"})
+                        if isinstance(simple_version, str) and simple_version.startswith("[Error"):
+                            st.error(
+                                "There was a problem simplifying the document. "
+                                "Please try again in a moment."
+                            )
+                            st.caption(simple_version)
+                        else:
+                            st.write(simple_version)
+                            st.session_state.usage_log.append({"action": "eli12"})
+
+                    except Exception as e:
+                        st.error(
+                            "Something went wrong while simplifying the document. "
+                            "Please try again."
+                        )
+                        st.caption(f"Technical details: {e}")
+
 
 
                 # ---- Rewrite for Clarity tab ----
@@ -995,8 +1076,6 @@ else:
 
             if not st.session_state.is_pro_user:
                 render_pro_upsell("Rewrite for Clarity")
-
-            
             else:
                 st.write(
                     "Improve clarity, professionalism, and readability while preserving meaning. "
@@ -1004,11 +1083,27 @@ else:
                 )
 
                 if st.button("Rewrite Document for Clarity"):
-                    with st.spinner("Rewriting document for clarity and professional tone..."):
-                        rewritten = rewrite_for_clarity(text)
-                    st.write(rewritten)
+                    try:
+                        with st.spinner("Rewriting document for clarity and professional tone..."):
+                            rewritten = rewrite_for_clarity(text)
 
-                    st.session_state.usage_log.append({"action": "rewrite_clarity"})
+                        if isinstance(rewritten, str) and rewritten.startswith("[Error"):
+                            st.error(
+                                "There was a problem rewriting the document. "
+                                "Please try again in a moment."
+                            )
+                            st.caption(rewritten)
+                        else:
+                            st.write(rewritten)
+                            st.session_state.usage_log.append({"action": "rewrite_clarity"})
+
+                    except Exception as e:
+                        st.error(
+                            "Something went wrong while rewriting the document. "
+                            "Please try again."
+                        )
+                        st.caption(f"Technical details: {e}")
+
 
 
                # ---- Study Guide / Quiz tab ----
@@ -1017,8 +1112,6 @@ else:
 
             if not st.session_state.is_pro_user:
                 render_pro_upsell("Study Guide / Quiz")
-
-            
             else:
                 st.write(
                     "Turn your document into a structured study guide with key points, lessons, and "
@@ -1026,11 +1119,27 @@ else:
                 )
 
                 if st.button("Generate Study Guide"):
-                    with st.spinner("Creating study guide and quiz questions..."):
-                        study_guide = generate_study_guide(text)
-                    st.markdown(study_guide)
+                    try:
+                        with st.spinner("Creating study guide and quiz questions..."):
+                            study_guide = generate_study_guide(text)
 
-                    st.session_state.usage_log.append({"action": "study_guide"})
+                        if isinstance(study_guide, str) and study_guide.startswith("[Error"):
+                            st.error(
+                                "There was a problem generating the study guide. "
+                                "Please try again in a moment."
+                            )
+                            st.caption(study_guide)
+                        else:
+                            st.markdown(study_guide)
+                            st.session_state.usage_log.append({"action": "study_guide"})
+
+                    except Exception as e:
+                        st.error(
+                            "Something went wrong while generating the study guide. "
+                            "Please try again."
+                        )
+                        st.caption(f"Technical details: {e}")
+
 
 
                 # ---- Full Report tab ----
