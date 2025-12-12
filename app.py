@@ -762,54 +762,43 @@ with st.sidebar:
         type=["pdf", "docx", "txt"]
     )
 
-    st.markdown("**Current safety limits**")
+    st.markdown("**Current limits**")
     st.caption(
-        f"- Free: up to **{FREE_MAX_PAGES}** pages per document\n"
+        f"- Free: up to **{FREE_MAX_PAGES}** pages per document, "
+        "and **3 documents per day**\n"
         f"- Pro: up to **{PRO_MAX_PAGES}** pages per document\n"
         f"- Very large files and books are not supported."
     )
 
     st.markdown("---")
-    st.subheader("Account")
+    st.subheader("Your plan")
 
-    # NEW: show Firebase-linked account info if available
-    firebase_email = st.session_state.get("firebase_email")
-    firebase_plan = st.session_state.get("firebase_plan")
-
-    if firebase_email:
-        st.caption(f"Signed in as: {firebase_email}")
-
-    if firebase_plan:
-        st.caption(f"Account plan: {firebase_plan.capitalize()}")
-
-
-    # ---- Pro User ----
     if st.session_state.is_pro_user:
-        st.markdown("### ⭐ DocSift Pro Active")
-        st.caption("Thank you for supporting DocSift!")
-    
-    # ---- Free User ----
-    else:
-        st.markdown(
-            """
-            <div style="line-height:1.5;">
-                <a href="https://getdocsift.com/#account" target="_blank"
-                   style="font-weight:600; text-decoration:none;">
-                   Upgrade to DocSift Pro
-                </a>
-                <br>
-                Unlock advanced features including:<br>
-                <em>Key Points, Action Items, Risk Analysis, Explain Like I'm 12,<br>
-                Clarity Rewrites, Study Guides, and Full Reports.</em>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        # Pro user messaging
+        st.markdown("**DocSift Pro** ✅")
+        st.caption(
+            "Higher limits and all advanced tools unlocked:\n"
+            "- Key Points, Action Items, Risks\n"
+            "- Explain Like I'm 12, Clarity Rewrite\n"
+            "- Study Guides and Full Reports"
         )
-        
-    # --- Dev-only override (does NOT reset is_pro_user in production) ---
+    else:
+        # Free user messaging + upgrade link
+        st.markdown("**Free plan**")
+        st.caption(
+            "You can process up to 5 pages per document and 3 documents per day.\n\n"
+            "Upgrade to Pro to unlock higher limits plus:\n"
+            "- Key Points, Action Items, Risks\n"
+            "- Explain Like I'm 12, Clarity Rewrite\n"
+            "- Study Guides and Full Reports"
+        )
+        st.markdown(
+            f"[Upgrade to DocSift Pro]({UPGRADE_URL})"
+        )
 
+    # Dev-only override (does NOT reset is_pro_user in production)
     if DEV_MODE:
-        st.markmarkdown("---")
+        st.markdown("---")
         st.caption("Developer controls (visible only in DEV_MODE).")
         dev_force_pro = st.checkbox(
             "Force Pro mode (dev only)",
@@ -817,8 +806,6 @@ with st.sidebar:
         )
         if dev_force_pro:
             st.session_state.is_pro_user = True
-
-
 
 
 # ------------- Main content -------------
