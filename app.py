@@ -226,7 +226,8 @@ st.markdown(
 
 # --------- Safety limits (we'll later make these per-plan) ---------
 FREE_MAX_PAGES = 5
-PRO_MAX_PAGES = 30   # or 100 if you want
+PRO_MAX_PAGES = 30   
+FREE_DOCS_PER_DAY = 3
 
 APPROX_CHARS_PER_PAGE = 1800    # For DOCX/TXT page estimates
 # -------------------------------------------------------------------
@@ -901,8 +902,6 @@ else:
         # ---------- STEP 5: Usage & Free-Tier Limits ----------
         # Estimate pages from text (for DOCX/TXT) or from PDF earlier logic
         page_count = estimate_pages_from_text(text)
-
-        FREE_DOCS_PER_DAY = 3
 
         # Check free/pro limits
         limit_error = check_limits(page_count)
