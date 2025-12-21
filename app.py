@@ -255,8 +255,9 @@ def check_limits(page_count):
     if page_count > FREE_MAX_PAGES:
         return f"Free accounts can only process documents up to {FREE_MAX_PAGES} pages."
 
-    if st.session_state.daily_uses >= 3:
-        return "Free accounts can only analyze 3 documents per day."
+    if st.session_state.daily_uses >= FREE_DOCS_PER_DAY:
+        return f"Free accounts can only analyze {FREE_DOCS_PER_DAY} documents per day."
+
 
     return None
 
@@ -799,24 +800,38 @@ with st.sidebar:
         # Pro user messaging
         st.markdown("**DocSift Pro** ✅")
         st.caption(
-            "Higher limits and all advanced tools unlocked:\n"
-            "- Key Points, Action Items, Risks\n"
-            "- Explain Like I'm 12, Clarity Rewrite\n"
-            "- Study Guides and Full Reports"
+            "Higher limits and all professional workflow tools unlocked:\n"
+            "- Key Points, Action Items\n"
+            "- Risks & Red Flags\n"
+            "- Rewrite for Clarity\n"
+            "- Simplify the Jargon\n"
+            "- Training / Onboarding Guide\n"
+            "- Full Brief (All Sections)"
         )
+
     else:
         # Free user messaging + upgrade link
-        st.markdown("**Free plan**")
-        st.caption(
-            "You can process up to 5 pages per document and 3 documents per day.\n\n"
-            "Upgrade to Pro to unlock higher limits plus:\n"
-            "- Key Points, Action Items, Risks\n"
-            "- Explain Like I'm 12, Clarity Rewrite\n"
-            "- Study Guides and Full Reports"
-        )
+        st.markdown("### Free plan")
+        st.write("You’re on the Free plan. You can run quick one-off document summaries.")
         st.markdown(
-            f"[Upgrade to DocSift Pro]({UPGRADE_URL})"
+            f"""
+**Free includes**
+- Executive Summary
+- Up to **{FREE_MAX_PAGES} pages** per document
+- Up to **{FREE_DOCS_PER_DAY} documents/day**
+
+**Pro unlocks**
+- Key Points
+- Action Items
+- Risks & Red Flags
+- Rewrite for Clarity
+- Simplify the Jargon
+- Training / Onboarding Guide
+- Full Brief (All Sections)
+- Up to **{PRO_MAX_PAGES} pages** per document
+"""
         )
+        st.markdown(f"[👉 Upgrade to DocSift Pro]({UPGRADE_URL})")
 
     # Dev-only override (does NOT reset is_pro_user in production)
     if DEV_MODE:
@@ -887,6 +902,8 @@ else:
         # Estimate pages from text (for DOCX/TXT) or from PDF earlier logic
         page_count = estimate_pages_from_text(text)
 
+        FREE_DOCS_PER_DAY = 3
+
         # Check free/pro limits
         limit_error = check_limits(page_count)
         if limit_error:
@@ -919,7 +936,7 @@ else:
             st.text_area("Document Text", value=text, height=400)
 
 
-                # ---- Summary tab ----
+        # ---- Summary tab ----
         with tab_summary:
             st.subheader("Executive Summary")
             st.write(
@@ -1028,7 +1045,7 @@ else:
             st.subheader("Risks & Red Flags")
 
             if not st.session_state.is_pro_user:
-                render_pro_upsell("Risk Analyzer")
+                render_pro_upsell("Risks & Red Flags")
             else:
                 st.write(
                     "Scan the document for risks, gaps, vague language, missing information, and potential issues. "
@@ -1226,10 +1243,10 @@ else:
                     st.markdown(full_report)
                     st.markdown("---")
 
-                    st.markdown("### Download Full Report")
+                    st.markdown("### Download Full Brief")
 
                     st.download_button(
-                        label="Download Full Report (Markdown)",
+                        label="Download Full Brief (Markdown)",
                         data=full_report,
                         file_name="docsift_report.md",
                         mime="text/markdown",
@@ -1237,7 +1254,7 @@ else:
                     )
 
                     st.download_button(
-                        label="Download Full Report (PDF)",
+                        label="Download Full Brief (PDF)",
                         data=pdf_bytes,
                         file_name="docsift_report.pdf",
                         mime="application/pdf",
@@ -1245,7 +1262,7 @@ else:
                     )
 
                     st.download_button(
-                        label="Download Full Report (Word)",
+                        label="Download Full Brief (Word)",
                         data=docx_bytes,
                         file_name="docsift_report.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
