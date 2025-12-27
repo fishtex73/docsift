@@ -7,7 +7,6 @@ from openai import OpenAI
 import io
 from fpdf import FPDF
 import math
-import stripe
 from urllib.parse import urlparse, parse_qs
 
 import json
@@ -28,15 +27,12 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 st.set_page_config(page_title="DocSift", layout="wide")
 
 
-# Simple upgrade URL placeholder – change this later to your real Stripe checkout or pricing page
-UPGRADE_URL = "https://buy.stripe.com/14A7sLej62Qw7Xs2vsbZe00"
+# Link to the Gumroad product subscribe page
+UPGRADE_URL = "https://fishtexter.gumroad.com/l/docsift"
 
 # Dev flag so you (and only you) can enable a Pro toggle in dev
 DEV_MODE = os.getenv("DOCSIFT_DEV_MODE", "false").lower() == "true"
 
-
-# Stripe API key from secrets
-stripe.api_key = st.secrets["STRIPE_SECRET_KEY"]
 
 # ---------- Firebase Admin initialization (for plan verification) ----------
 
